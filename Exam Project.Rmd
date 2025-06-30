@@ -15,19 +15,77 @@ library(dplyr)
 library(tidyr)
 ```
 
-## NCCTG Lung Cancer Data
+# NCCTG Lung Cancer Data
+## Dataset description
 description
 
-```{importing dataset}
-ds = 
+```{r importing dataset}
+data = survival::cancer
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r summary}
+summary(data)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r factors to factors, echo = FALSE}
+data$sex <- factor(data$sex)
+data$status <- factor(data$status)
+data$ph.ecog <- factor(data$ph.ecog)
+data$ph.karno <- factor(data$ph.karno)
+data$pat.karno <- factor(data$pat.karno)
+```
+
+## NAs
+```{r na overview}
+colSums(is.na(data))
+```
+
+```{r NA distribution}
+nas <- data.frame(var=colnames(data), na=colSums(is.na(data)))
+ggplot(nas, aes(x=var, y=na))+ 
+  geom_bar(stat="identity")+
+  xlab("Variables") +
+  ylab("Number of NAs") +
+  theme_grey()
+
+```
+
+```{r NAs (conditioned to sex)}
+
+dataM <-data.frame(
+  var=colnames(data[data$sex=="1",]), 
+  sex="Male", 
+  na=colSums(is.na(data[data$sex=="1",]))
+)
+
+dataF <- data.frame(
+  var=colnames(data[data$sex=="2",]),
+  sex="Female",
+  na=colSums(is.na(data[data$sex=="2",]))
+)
+
+nas_conditioned <- rbind(dataM, dataF)
+nas_conditioned_df <- data.frame(var=colnames(data), na=colSums(is.na(data)))
+
+ggplot(nas_conditioned, aes(x=var, y=na))+ 
+  xlab("Variables") +
+  ylab("Number of NAs") +
+  geom_bar(stat="identity")+
+  facet_wrap(~sex) +
+  coord_flip()
+```
+```{r NAs prediction}
+hasna <- as.numeric(rowSums(is.na(data)) > 0)
+na.corr.data <- cbind(data, hasna)
+na.corr.data <- na.corr.data[-9]
+
+m <- glm(
+  hasna ~ inst + ph.ecog + ph.karno + pat.karno + sex + time,
+  family = binomial(link="logit"),
+  data=na.corr.data
+)
+```
+
+## Exploratory data analysis
+### Univariate analysis
+### Bivariate analysis

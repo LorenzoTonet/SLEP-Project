@@ -35,6 +35,14 @@ data$ph.karno <- factor(data$ph.karno)
 data$pat.karno <- factor(data$pat.karno)
 ```
 
+```{r additional variables}
+data$age.cat <- cut(
+    data.nm$age, 
+    breaks=c(0, 50, 70, Inf), 
+    labels=c("<50", "50-70", "70+")
+)
+```
+
 ## NAs
 ```{r na overview}
 colSums(is.na(data))

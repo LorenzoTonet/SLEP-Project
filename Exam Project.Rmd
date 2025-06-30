@@ -13,6 +13,8 @@ library(ggplot2)
 library(corrplot)
 library(dplyr)
 library(tidyr)
+library(ggExtra)
+library(patchwork)
 ```
 
 # NCCTG Lung Cancer Data
@@ -123,5 +125,20 @@ m <- glm(
 
 ## Exploratory data analysis
 ### Univariate analysis
+```{r Age variable}
+
+p1 = ggplot(data = data, aes(x = age, y = ..density..)) +
+  geom_histogram(bins = 20) +
+  geom_density(alpha = 0.5, colour="darkgray") +
+  labs(title = "Age Distribution", x = "Age", y = "Count") +
+  theme_minimal()
+
+p2 = ggplot(data = data, aes(x = age)) +
+  geom_boxplot() +
+  labs(title = "Age Boxplot", x = "Age", y = "Count") +
+  theme_minimal()
+
+p1 + p2 + plot_layout(heights = c(5,1))
+```
 
 ### Bivariate analysis

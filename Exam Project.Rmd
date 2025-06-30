@@ -74,6 +74,33 @@ ggplot(nas_conditioned, aes(x=var, y=na))+
   facet_wrap(~sex) +
   coord_flip()
 ```
+```{r NAs (conditioned to status)}
+data1 <-data.frame(
+  var=colnames(data[data$status=="1",]),
+  status="1",
+  na=colSums(is.na(data[data$status=="1",]))
+)
+
+data2 <- data.frame(
+  var=colnames(data[data$status=="2",]),
+  status="2",
+  na=colSums(is.na(data[data$status=="2",]))
+)
+
+
+nass <- rbind(data1, data2)
+nas <- data.frame(var=colnames(data), na=colSums(is.na(data)))
+
+ggplot(nass, aes(x=var, y=na))+
+  xlab("Variables") +
+  ylab("Number of NAs") +
+  geom_bar(stat="identity")+
+  facet_wrap(~status) +
+  coord_flip() +
+  theme_bw()
+```
+
+
 ```{r NAs prediction}
 hasna <- as.numeric(rowSums(is.na(data)) > 0)
 na.corr.data <- cbind(data, hasna)
@@ -88,4 +115,5 @@ m <- glm(
 
 ## Exploratory data analysis
 ### Univariate analysis
+
 ### Bivariate analysis

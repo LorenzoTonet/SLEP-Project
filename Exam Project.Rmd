@@ -1,0 +1,33 @@
+---
+title: "Lung cancer survival analysis"
+author: "Bortolussi Lorenzo, Cartago Marco, Tonet Lorenzo"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(survival)
+library(survminer)
+library(ggplot2)
+library(corrplot)
+library(dplyr)
+library(tidyr)
+```
+
+## NCCTG Lung Cancer Data
+description
+
+```{importing dataset}
+ds = 
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

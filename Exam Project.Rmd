@@ -258,6 +258,12 @@ corrplot(corr.mat, method="color", type="full", tl.col="black", tl.srt=45,
          title="Correlation Matrix of Numerical Variables", mar=c(0,0,1,0))
 ```
 
+```{r pat vs ph karno}
+
+ggplot(data, aes(x=pat.karno, y=ph.karno)) + 
+  geom_jitter()
+```
+
 ### Conditioning to status
 
 ```{r sex vs status, warning=FALSE}
@@ -337,9 +343,14 @@ ggsurvplot(survfit_ecog,
            xlab="Days", 
            ylab="Overall survival probability",
            risk.table=TRUE,
+           risk.table.height=0.25,
            conf.int=TRUE,
            surv.median.line="hv", 
-           data=original_data)
+           data=original_data,
+           break.x.by=250,  # Meno punti sull'asse x
+           xlim=c(0,1000))
+
+survdiff(Surv(time, status) ~ sex, original_data)
 ```
 
 ```{r KM with respect to ph.ecog, warning=FALSE}
@@ -351,6 +362,8 @@ ggsurvplot(survfit_ecog,
            conf.int=FALSE,
            surv.median.line="hv",
            data=original_data)
+
+survdiff(Surv(time, status) ~ ph.ecog, original_data)
 ```
 
 

@@ -262,6 +262,7 @@ corrplot(corr.mat, method="color", type="full", tl.col="black", tl.srt=45,
 
 ggplot(data, aes(x=pat.karno, y=ph.karno)) + 
   geom_jitter()
+
 ```
 
 ### Conditioning to status

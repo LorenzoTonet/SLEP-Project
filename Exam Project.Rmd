@@ -225,8 +225,30 @@ p2 = ggplot(data = data, aes(x = time)) +
 p1 + p2 + plot_layout(heights = c(5,1))
 
 ```
+```{r meal.cal distribution, warning=FALSE}
+
+x_limits <- range(data$meal.cal, na.rm = TRUE)
+
+p1 = ggplot(data = data, aes(x = meal.cal, y = after_stat(density))) +
+  geom_histogram(bins = 35) +
+  geom_density(alpha = 0.5, colour="darkgray") +
+  labs(title = "Meal Calories distribution") +
+  scale_x_continuous(limits = x_limits) +
+  theme_minimal()
+
+p2 = ggplot(data = data, aes(x = meal.cal)) +
+  geom_boxplot() +
+  labs(x = "meal.cal") +
+  scale_x_continuous(limits = x_limits) +
+  theme_minimal()
+
+p1 + p2 + plot_layout(heights = c(5,1))
+
+```
+
+
 ### Bivariate analysis
-```{r time distribution, warning=FALSE}
+```{r corr matrix, warning=FALSE}
 original_data = survival::cancer
 ds = subset(original_data, select=c(time, age, ph.ecog, ph.karno, pat.karno, wt.loss))
 corr.mat <- cor(ds, use="pairwise.complete.obs", method="spearman")
@@ -236,6 +258,8 @@ corrplot(corr.mat, method="color", type="full", tl.col="black", tl.srt=45,
          title="Correlation Matrix of Numerical Variables", mar=c(0,0,1,0))
 ```
 
+### Conditioning to status
+
 ```{r sex vs status, warning=FALSE}
 library(ggmosaic)
 tab = prop.table(table(data$status, data$sex))
@@ -244,14 +268,47 @@ colnames(df_tab) = c("status", "sex", "prop")
 
 ggplot(data) +
   geom_mosaic(aes(x = product(sex, status), fill = status)) +
+  scale_fill_discrete(guide = "none") +
   theme_minimal()
+```
+
+```{r evals vs status, warning=FALSE}
+p1 = ggplot(data) +
+  geom_mosaic(aes(x = product(ph.ecog, status), fill = ph.ecog), na.rm = TRUE) +
+  scale_fill_discrete(guide = "none") +
+  theme_minimal()
+
+p2 = ggplot(data) +
+  geom_mosaic(aes(x = product(ph.karno, status), fill = ph.karno), na.rm = TRUE) +
+  scale_fill_discrete(guide = "none") +
+  theme_minimal()
+
+p3 = ggplot(data) +
+  geom_mosaic(aes(x = product(pat.karno, status), fill = pat.karno), na.rm = TRUE) +
+  scale_fill_discrete(guide = "none") +
+  theme_minimal()
+
+p1 + p2 + p3 + plot_layout(ncol = 3)
 
 ```
 
-```{r ph.karno vs status, warning=FALSE}
-ggplot(data) +
-  geom_mosaic(aes(x = product(ph.karno, status), fill = ph.karno)) +
-  theme_minimal()
+```{r time and wt.loss vs status, warning=FALSE}
 
+p1 = ggplot(data, aes(x=status, y=time, fill = status)) +
+  geom_violin(draw_quantiles = c(0.25,0.5,0.75)) +
+  labs(x = "Status", y = "Time")
+  
+p2 = ggplot(data, aes(x=status, y=wt.loss, fill = status)) +
+  geom_violin(draw_quantiles = c(0.25,0.5,0.75)) +
+  labs(x = "Status", y = "Weight Loss") 
+  
+p1 + p2 + plot_layout(ncol = 2)
+```
+```{r time and wt.loss vs status2, warning=FALSE}
+p <- ggplot(data, aes(x=time, y=wt.loss, color=status)) +
+      geom_point()
+    
+p1 = ggMarginal(p, groupFill = T, type="boxplot")
+p1
 ```
 

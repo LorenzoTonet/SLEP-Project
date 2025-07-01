@@ -153,6 +153,7 @@ sorted <- data.nm[order(data.nm$time),]
 plot(sorted$time, col=as.numeric(sorted$status), pch=19)
 abline(h=mean(sorted$time), add=T)
 abline(h=median(sorted$time), add=T)
+
 ##########################################################################
 # Correlation matrix
 library(corrplot)
@@ -208,7 +209,7 @@ ggsurvplot(survfit_ecog,
            ylab="Overall survival probability",
            risk.table=TRUE,
            conf.int=FALSE,
-           surv.median.line="hv", 
+           surv.median.line="hv",
            data=data)
 
 ggplot(data.nm, aes(x=age)) +

@@ -366,5 +366,12 @@ ggsurvplot(survfit_ecog,
 
 survdiff(Surv(time, status) ~ ph.ecog, original_data)
 ```
-
-
+```{r cox model}
+cox_sex = coxph(Surv(time, status) ~ ., data=original_data)
+print(cox_sex)
+```
+```{r cox_sex test}
+test.ph = cox.zph(cox_sex)
+print(test.ph)
+ggcoxzph(test.ph)
+```

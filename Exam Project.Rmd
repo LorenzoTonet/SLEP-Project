@@ -17,12 +17,12 @@ library(ggExtra)
 library(patchwork)
 library(corrplot)
 library(survminer)
+library(ggmosaic)
 ```
 
 # NCCTG Lung Cancer Data
 
 ## Dataset description
-
 
 The dataset we chose to analyze is the `cancer` dataset from the r package `survival`. The dataset itself was first collected and analyzed by the North Central Cancer Treatment Group. In this prospective study, participants were provided with a questionnaire prior to hospitalization. Each patient was also evaluated by a physician, who assigned a performance score based on their clinical condition.
 
@@ -42,7 +42,6 @@ The variables collected are the following:
 | wt.loss   | Weight loss in pounds in the last six months                                                                                                                                                       |
 
 Most of the present variables are categorical. We decided to add another categorical variable, cutting the age range into three age ranges: 0-50, 50-70, 70+. We also converted some of the variables into categorical factors.
-
 
 ```{r importing dataset}
 data = survival::cancer
@@ -75,7 +74,6 @@ We first tried to see wether there is any systematic distribution of missing val
 We then tried to stratify with respect to the different categorical variables, so to check if there was any substantial difference in the NA distribution.
 
 Most of the missing values, around 20% of the total, are in the variable `meal.cal`. So for some initial data analysis we decided to ignore this variable
-
 
 ```{r na overview}
 colSums(is.na(data))
@@ -176,6 +174,7 @@ p2 = ggplot(data = data, aes(x = age)) +
 
 p1 + p2 + plot_layout(heights = c(5,1))
 ```
+
 ```{r status barplot}
 
 ggplot(data, aes(x=status))+
@@ -185,6 +184,7 @@ ggplot(data, aes(x=status))+
   theme_grey()
 
 ```
+
 ```{r wt.loss variable, warning=FALSE}
 
 x_limits <- range(data$wt.loss)
@@ -205,6 +205,7 @@ p2 = ggplot(data = data, aes(x = wt.loss)) +
 p1 + p2 + plot_layout(heights = c(5,1))
 
 ```
+
 ```{r time distribution, warning=FALSE}
 
 x_limits <- range(data$time)
@@ -225,6 +226,7 @@ p2 = ggplot(data = data, aes(x = time)) +
 p1 + p2 + plot_layout(heights = c(5,1))
 
 ```
+
 ```{r meal.cal distribution, warning=FALSE}
 
 x_limits <- range(data$meal.cal, na.rm = TRUE)
@@ -246,8 +248,8 @@ p1 + p2 + plot_layout(heights = c(5,1))
 
 ```
 
-
 ### Bivariate analysis
+
 ```{r corr matrix, warning=FALSE}
 original_data = survival::cancer
 ds = subset(original_data, select=c(time, age, ph.ecog, ph.karno, pat.karno, wt.loss))
@@ -268,53 +270,67 @@ ggplot(data, aes(x=pat.karno, y=ph.karno)) +
 ### Conditioning to status
 
 ```{r sex vs status, warning=FALSE}
-library(ggmosaic)
 tab = prop.table(table(data$status, data$sex))
 df_tab = as.data.frame(tab)
 colnames(df_tab) = c("status", "sex", "prop")
 
-ggplot(data) +
-  geom_mosaic(aes(x = product(sex, status), fill = status)) +
+data %>%
+  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot() +
+  geom_mosaic(aes(x = product(sex, status_lbl), fill = status_lbl)) +
   scale_fill_discrete(guide = "none") +
   theme_minimal()
 ```
 
 ```{r evals vs status, warning=FALSE}
-p1 = ggplot(data) +
-  geom_mosaic(aes(x = product(ph.ecog, status), fill = ph.ecog), na.rm = TRUE) +
+p1 <- data %>%
+  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot() +
+  geom_mosaic(aes(x = product(ph.ecog, status_lbl), fill = ph.ecog), na.rm = TRUE) +
   scale_fill_discrete(guide = "none") +
   theme_minimal()
 
-p2 = ggplot(data) +
-  geom_mosaic(aes(x = product(ph.karno, status), fill = ph.karno), na.rm = TRUE) +
+p2 <- data %>%
+  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot() +
+  geom_mosaic(aes(x = product(ph.karno, status_lbl), fill = ph.karno), na.rm = TRUE) +
   scale_fill_discrete(guide = "none") +
   theme_minimal()
 
-p3 = ggplot(data) +
-  geom_mosaic(aes(x = product(pat.karno, status), fill = pat.karno), na.rm = TRUE) +
+p3 <- data %>%
+  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot() +
+  geom_mosaic(aes(x = product(pat.karno, status_lbl), fill = pat.karno), na.rm = TRUE) +
   scale_fill_discrete(guide = "none") +
   theme_minimal()
 
 p1 + p2 + p3 + plot_layout(ncol = 3)
-
 ```
 
 ```{r time and wt.loss vs status, warning=FALSE}
+p1 <- data %>%
+  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot(aes(x = status_lbl, y = time, fill = status_lbl)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = "Status", y = "Time") +
+  theme_minimal()
 
-p1 = ggplot(data, aes(x=status, y=time, fill = status)) +
-  geom_violin(draw_quantiles = c(0.25,0.5,0.75)) +
-  labs(x = "Status", y = "Time")
-  
-p2 = ggplot(data, aes(x=status, y=wt.loss, fill = status)) +
-  geom_violin(draw_quantiles = c(0.25,0.5,0.75)) +
-  labs(x = "Status", y = "Weight Loss") 
-  
+p2 <- data %>%
+  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot(aes(x = status_lbl, y = wt.loss, fill = status_lbl)) +
+  geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  labs(x = "Status", y = "Weight Loss") +
+  theme_minimal()
+
 p1 + p2 + plot_layout(ncol = 2)
 ```
+
 ```{r time and wt.loss vs status2, warning=FALSE}
-p <- ggplot(data, aes(x=time, y=wt.loss, color=status)) +
-      geom_point()
-    
+p <- data %>%
+  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot(aes(x = time, y = wt.loss, color = status_lbl)) +
+  geom_point()
+
 p1 = ggMarginal(p, groupFill = T, type="boxplot")
 p1
 ```
@@ -332,7 +348,6 @@ ggsurvplot(survfit_sex,
            surv.median.line="hv", 
            data=original_data)
 ```
-
 
 ```{r KM with respect to age, warning=FALSE}
 
@@ -366,5 +381,3 @@ ggsurvplot(survfit_ecog,
 
 survdiff(Surv(time, status) ~ ph.ecog, original_data)
 ```
-
-

@@ -15,11 +15,34 @@ library(dplyr)
 library(tidyr)
 library(ggExtra)
 library(patchwork)
+library(corrplot)
+
 ```
 
 # NCCTG Lung Cancer Data
+
 ## Dataset description
-description
+
+
+The dataset we chose to analyze is the `cancer` dataset from the r package `survival`. The dataset itself was first collected and analyzed by the North Central Cancer Treatment Group. In this prospective study, participants were provided with a questionnaire prior to hospitalization. Each patient was also evaluated by a physician, who assigned a performance score based on their clinical condition.
+
+The variables collected are the following:
+
+|           |                                                                                                                                                                                                    |
+|:-----------------------------------|:-----------------------------------|
+| inst      | The code of the institution in which the patient was hospitalized                                                                                                                                  |
+| time      | The survival time in days                                                                                                                                                                          |
+| status    | The censoring status                                                                                                                                                                               |
+| age       | The age in years                                                                                                                                                                                   |
+| sex       | Patient sex                                                                                                                                                                                        |
+| ph.ecog   | ECOG performance score as rated by the physician. 0=asymptomatic, 1= symptomatic but completely ambulatory, 2= in bed \<50% of the day, 3= in bed \> 50% of the day but not bedbound, 4 = bedbound |
+| ph.karno  | Karnofsky performance score (bad=0-good=100) rated by physician                                                                                                                                    |
+| pat.karno | Karnofsky performance score as rated by the patient itself                                                                                                                                         |
+| meal.cal  | Calories consumed at the meal before hospitalization                                                                                                                                               |
+| wt.loss   | Weight loss in pounds in the last six months                                                                                                                                                       |
+
+Most of the present variables are categorical. We decided to add another categorical variable, cutting the age range into three age ranges: 0-50, 50-70, 70+. We also converted some of the variables into categorical factors.
+
 
 ```{r importing dataset}
 data = survival::cancer
@@ -39,13 +62,21 @@ data$pat.karno <- factor(data$pat.karno)
 
 ```{r additional variables}
 data$age.cat <- cut(
-    data.nm$age, 
+    data$age, 
     breaks=c(0, 50, 70, Inf), 
     labels=c("<50", "50-70", "70+")
 )
 ```
 
 ## NAs
+
+We first tried to see wether there is any systematic distribution of missing values inside the dataset. The first thing we did is a comprehensive NA plot for all the variables.
+
+We then tried to stratify with respect to the different categorical variables, so to check if there was any substantial difference in the NA distribution.
+
+Most of the missing values, around 20% of the total, are in the variable `meal.cal`. So for some initial data analysis we decided to ignore this variable
+
+
 ```{r na overview}
 colSums(is.na(data))
 ```
@@ -84,6 +115,7 @@ ggplot(nas_conditioned, aes(x=var, y=na))+
   facet_wrap(~sex) +
   coord_flip()
 ```
+
 ```{r NAs (conditioned to status)}
 data1 <-data.frame(
   var=colnames(data[data$status=="1",]),
@@ -106,10 +138,8 @@ ggplot(nass, aes(x=var, y=na))+
   ylab("Number of NAs") +
   geom_bar(stat="identity")+
   facet_wrap(~status) +
-  coord_flip() +
-  theme_bw()
+  coord_flip()
 ```
-
 
 ```{r NAs prediction}
 hasna <- as.numeric(rowSums(is.na(data)) > 0)
@@ -124,21 +154,104 @@ m <- glm(
 ```
 
 ## Exploratory data analysis
-### Univariate analysis
-```{r Age variable}
 
-p1 = ggplot(data = data, aes(x = age, y = ..density..)) +
+### Univariate analysis
+
+```{r Age variable, warning=FALSE}
+
+x_limits <- range(data$age)
+
+p1 = ggplot(data = data, aes(x = age, y = after_stat(density))) +
   geom_histogram(bins = 20) +
   geom_density(alpha = 0.5, colour="darkgray") +
-  labs(title = "Age Distribution", x = "Age", y = "Count") +
+  labs(title = "Age Distribution", y = "Count") +
+  scale_x_continuous(limits = x_limits) +
   theme_minimal()
 
 p2 = ggplot(data = data, aes(x = age)) +
   geom_boxplot() +
-  labs(title = "Age Boxplot", x = "Age", y = "Count") +
+  labs(x = "age") +
+  scale_x_continuous(limits = x_limits) +
   theme_minimal()
 
 p1 + p2 + plot_layout(heights = c(5,1))
 ```
+```{r status barplot}
 
+ggplot(data, aes(x=status))+
+  geom_bar(aes(y = after_stat(prop), group = 1)) +
+  scale_x_discrete(labels = c("1" = "Censored", "2" = "Dead")) +
+  labs(x = "Status", y = "Proportion") +
+  theme_grey()
+
+```
+```{r wt.loss variable, warning=FALSE}
+
+x_limits <- range(data$wt.loss)
+
+p1 = ggplot(data = data, aes(x = wt.loss, y = after_stat(density))) +
+  geom_histogram(bins = 20) +
+  geom_density(alpha = 0.5, colour="darkgray") +
+  labs(title = "Weight loss Distribution") +
+  scale_x_continuous(limits = x_limits) +
+  theme_minimal()
+
+p2 = ggplot(data = data, aes(x = wt.loss)) +
+  geom_boxplot() +
+  labs(x = "wt.loss") +
+  scale_x_continuous(limits = x_limits) +
+  theme_minimal()
+
+p1 + p2 + plot_layout(heights = c(5,1))
+
+```
+```{r time distribution, warning=FALSE}
+
+x_limits <- range(data$time)
+
+p1 = ggplot(data = data, aes(x = time, y = after_stat(density))) +
+  geom_histogram(bins = 20) +
+  geom_density(alpha = 0.5, colour="darkgray") +
+  labs(title = "Time distribution") +
+  scale_x_continuous(limits = x_limits) +
+  theme_minimal()
+
+p2 = ggplot(data = data, aes(x = time)) +
+  geom_boxplot() +
+  labs(x = "time") +
+  scale_x_continuous(limits = x_limits) +
+  theme_minimal()
+
+p1 + p2 + plot_layout(heights = c(5,1))
+
+```
 ### Bivariate analysis
+```{r time distribution, warning=FALSE}
+original_data = survival::cancer
+ds = subset(original_data, select=c(time, age, ph.ecog, ph.karno, pat.karno, wt.loss))
+corr.mat <- cor(ds, use="pairwise.complete.obs", method="spearman")
+
+corrplot(corr.mat, method="color", type="full", tl.col="black", tl.srt=45, 
+         addCoef.col="black", number.cex=0.7, tl.cex=0.7, 
+         title="Correlation Matrix of Numerical Variables", mar=c(0,0,1,0))
+```
+
+```{r sex vs status, warning=FALSE}
+library(ggmosaic)
+tab = prop.table(table(data$status, data$sex))
+df_tab = as.data.frame(tab)
+colnames(df_tab) = c("status", "sex", "prop")
+
+ggplot(data) +
+  geom_mosaic(aes(x = product(sex, status), fill = status)) +
+  theme_minimal()
+
+```
+
+```{r ph.karno vs status, warning=FALSE}
+ggplot(data) +
+  geom_mosaic(aes(x = product(ph.karno, status), fill = ph.karno)) +
+  theme_minimal()
+
+```
+

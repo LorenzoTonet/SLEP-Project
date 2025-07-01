@@ -16,7 +16,7 @@ library(tidyr)
 library(ggExtra)
 library(patchwork)
 library(corrplot)
-
+library(survminer)
 ```
 
 # NCCTG Lung Cancer Data
@@ -311,4 +311,46 @@ p <- ggplot(data, aes(x=time, y=wt.loss, color=status)) +
 p1 = ggMarginal(p, groupFill = T, type="boxplot")
 p1
 ```
+
+## Survival analysis
+
+```{r KM estimator}
+survfit_sex = survfit(Surv(time, status) ~ 1, data=original_data)
+
+ggsurvplot(survfit_sex, 
+           xlab="Days", 
+           ylab="Overall survival probability",
+           risk.table=TRUE,
+           conf.int=TRUE,
+           surv.median.line="hv", 
+           data=original_data)
+```
+
+
+```{r KM with respect to age, warning=FALSE}
+
+original_data$age.cat <- cut(original_data$age, breaks=c(0, 50, 70, 100), labels=c("<50", "50-70", "70+"))
+
+survfit_ecog = survfit(Surv(time, event=status) ~ age.cat, data=original_data)
+summary(survfit_ecog)
+ggsurvplot(survfit_ecog, 
+           xlab="Days", 
+           ylab="Overall survival probability",
+           risk.table=TRUE,
+           conf.int=TRUE,
+           surv.median.line="hv", 
+           data=original_data)
+```
+
+```{r KM with respect to ph.ecog, warning=FALSE}
+survfit_ecog = survfit(Surv(time, event=status) ~ ph.ecog, data=original_data)
+ggsurvplot(survfit_ecog, 
+           xlab="Days", 
+           ylab="Overall survival probability",
+           risk.table=TRUE,
+           conf.int=FALSE,
+           surv.median.line="hv",
+           data=original_data)
+```
+
 

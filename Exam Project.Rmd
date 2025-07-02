@@ -529,7 +529,15 @@ end_time <- 1000
 
 ```{r}
 mod.cov2 <- cph(
-    Surv(time,status) ~ pat.karno, data=data.cl,
+    Surv(time,status) ~ sex + age + ph.karno, data=data.cl,
+    x=TRUE, 
+    y=TRUE,
+    surv=TRUE,
+    time.inc=end_time
+)
+
+mod.cov3 <- cph(
+    Surv(time,status) ~ sex + age + pat.karno, data=data.cl,
     x=TRUE, 
     y=TRUE,
     surv=TRUE,
@@ -538,9 +546,18 @@ mod.cov2 <- cph(
 ```
 
 ```{r}
-calkm <- calibrate(mod.cov2, u=2000, m=40, cmethod= 'KM', B=200)
+calkm2 <- calibrate(mod.cov2, u=400, m=20, B=25, cmethod= 'KM')
+calkm3 <- calibrate(mod.cov3, u=400, m=20, B=25, cmethod= 'KM')
+
+
+par(mfrow=c(1,2))
+plot(calkm2, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9))
+plot(calkm3, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9))
+par(mfrow=c(1,1))
+
 ```
 
+<<<<<<< HEAD
 ```{r}
 plot(calkm, cex.lab=0.7)
 ```
@@ -551,3 +568,5 @@ plot(calkm, cex.lab=0.7)
 library(timeROC)
 ROC.thick<-timeROC(T=data.cl$time,delta=data.cl$pat.karno,marker=melanom$thick,cause=1, times=c(1800,2000,2200),iid=TRUE)
 ```
+=======
+>>>>>>> 1f3963206021c019608e9f9f6f7c939607ae3b0a

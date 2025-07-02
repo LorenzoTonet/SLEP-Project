@@ -387,10 +387,12 @@ survdiff(Surv(time, status) ~ ph.ecog, original_data)
 cox_sex = coxph(Surv(time, status) ~ sex, data=original_data)
 print(cox_sex)
 ```
+
 ```{r cox_sex test}
 test.ph = cox.zph(cox_sex)
 print(test.ph)
 ```
+
 ```{r cox_sex residuals}
 ggcoxzph(test.ph)
 ```
@@ -399,10 +401,12 @@ ggcoxzph(test.ph)
 cox_age_sex = coxph(Surv(time, status) ~ age+sex, data=original_data)
 print(cox_age_sex)
 ```
+
 ```{r cox_age_sex test}
 test.ph = cox.zph(cox_age_sex)
 print(test.ph)
 ```
+
 ```{r, cox_age_sex residuals}
 ggcoxzph(test.ph)
 ```
@@ -411,10 +415,12 @@ ggcoxzph(test.ph)
 cox_karno = coxph(Surv(time, status) ~ pat.karno, data=original_data)
 print(cox_karno)
 ```
+
 ```{r cox_karno test}
 test.ph = cox.zph(cox_karno)
 print(test.ph)
 ```
+
 ```{r cox_karno residuals}
 ggcoxzph(test.ph)
 ```

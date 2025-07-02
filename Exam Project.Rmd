@@ -520,3 +520,8 @@ print(test.ph)
 print(cox_karno)
 ggcoxzph(test.ph)
 ```
+```{r cox calibration}
+dd = datadist(data.cl)
+dd
+```
+

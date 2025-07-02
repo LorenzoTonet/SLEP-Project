@@ -29,7 +29,7 @@ The dataset we chose to analyze is the `cancer` dataset from the r package `surv
 The variables collected are the following:
 
 |  |  |
-|:-----------------------------------|:-----------------------------------|
+|:---|:---|
 | inst | The code of the institution in which the patient was hospitalized |
 | time | The survival time in days |
 | status | The censoring status |
@@ -453,6 +453,7 @@ ggplot(bubble_data, aes(x=pat.karno, y=ph.karno, size = n)) +
 
 ```{r cox_karno}
 cox_karno = coxph(Surv(time, status) ~ pat.karno, data=data.cl)
+summary(cox_karno)
 print(cox_karno)
 ```
 
@@ -467,6 +468,7 @@ ggcoxzph(test.ph)
 
 ```{r cox_karno}
 cox_ph.karno = coxph(Surv(time, status) ~ ph.karno, data=data.cl)
+summary(cox_ph.karno)
 print(cox_ph.karno)
 ```
 
@@ -481,7 +483,7 @@ ggcoxzph(test.ph)
 
 ```{r whole cox model?}
 cox_karno = coxph(
-  Surv(time, status) ~ age + sex + ph.ecog + ph.karno + wt.loss , data=data.cl)
+  Surv(time, status) ~ age + sex + ph.ecog + ph.karno + pat.karno + wt.loss , data=data.cl)
 summary(cox_karno)
 test.ph = cox.zph(cox_karno)
 print(test.ph)

@@ -294,9 +294,7 @@ data %>%
 
 ```
 
-```{= c("censored" = "#1f78b5", "dead" = "darkgray")) +}
-  theme_minimal()
-```
+`{= c("censored" = "#1f78b5", "dead" = "darkgray")) +}   theme_minimal()`
 
 ```{r evals vs status, warning=FALSE}
 p1 <- data %>%
@@ -529,17 +527,17 @@ ggcoxzph(test.ph)
 ```
 
 ```{r}
-options(datadist='dd')
 dd <-datadist(data.cl)
+end_time <- 1000
 ```
 
 ```{r}
 mod.cov2 <- cph(
-    Surv(days,status==1) ~ sex, data=data.cl,
+    Surv(time,status) ~ pat.karno, data=data.cl,
     x=TRUE, 
     y=TRUE,
     surv=TRUE,
-    time.inc=400
+    time.inc=end_time
 )
 ```
 

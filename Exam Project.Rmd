@@ -287,14 +287,10 @@ data %>%
   mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
   ggplot() +
   geom_mosaic(aes(x = product(sex, status), fill = status)) +
-  scale_fill_manual(values
+  scale_fill_manual(values= c("censored" = "#1f78b5", "dead" = "darkgray")) +     
+  theme_minimal()
 ```
 
-```{r}
-
-```
-
-`{= c("censored" = "#1f78b5", "dead" = "darkgray")) +}   theme_minimal()`
 
 ```{r evals vs status, warning=FALSE}
 p1 <- data %>%
@@ -548,4 +544,3 @@ calkm <- calibrate(mod.cov2, u=2000, m=40, cmethod= 'KM', B=200)
 ```{r}
 plot(calkm, cex.lab=0.7)
 ```
->>>>>>> 14b5e9d47fc86c39503e0a7e1fa0aa375b05c560

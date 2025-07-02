@@ -544,3 +544,10 @@ calkm <- calibrate(mod.cov2, u=2000, m=40, cmethod= 'KM', B=200)
 ```{r}
 plot(calkm, cex.lab=0.7)
 ```
+
+## ROC curve
+
+```{r roc curve, warning=FALSE}
+library(timeROC)
+ROC.thick<-timeROC(T=data.cl$time,delta=data.cl$pat.karno,marker=melanom$thick,cause=1, times=c(1800,2000,2200),iid=TRUE)
+```

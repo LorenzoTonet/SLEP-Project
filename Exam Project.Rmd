@@ -29,7 +29,7 @@ The dataset we chose to analyze is the `cancer` dataset from the r package `surv
 The variables collected are the following:
 
 |  |  |
-|:---|:---|
+|:-----------------------------------|:-----------------------------------|
 | inst | The code of the institution in which the patient was hospitalized |
 | time | The survival time in days |
 | status | The censoring status |
@@ -40,8 +40,6 @@ The variables collected are the following:
 | pat.karno | Karnofsky performance score as rated by the patient itself |
 | meal.cal | Calories consumed at the meal before hospitalization |
 | wt.loss | Weight loss in pounds in the last six months |
-|  |  |
-| :----------------------------------- | :----------------------------------- |
 | inst | The code of the institution in which the patient was hospitalized |
 | time | The survival time in days |
 | status | The censoring status |

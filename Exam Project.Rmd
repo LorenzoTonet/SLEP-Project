@@ -45,6 +45,7 @@ Most of the present variables are categorical. We decided to add another categor
 
 ```{r importing dataset}
 data = survival::cancer
+original_data = data
 ```
 
 ```{r summary}
@@ -66,7 +67,7 @@ data$age.cat <- cut(
     labels=c("<50", "50-70", "70+")
 )
 ```
-
+***
 ## NAs
 
 We first tried to see wether there is any systematic distribution of missing values inside the dataset. The first thing we did is a comprehensive NA plot for all the variables.
@@ -150,7 +151,7 @@ m <- glm(
   data=na.corr.data
 )
 ```
-
+***
 ## Exploratory data analysis
 
 ### Univariate analysis
@@ -251,7 +252,6 @@ p1 + p2 + plot_layout(heights = c(5,1))
 ### Bivariate analysis
 
 ```{r corr matrix, warning=FALSE}
-original_data = survival::cancer
 ds = subset(original_data, select=c(time, age, ph.ecog, ph.karno, pat.karno, wt.loss))
 corr.mat <- cor(ds, use="pairwise.complete.obs", method="spearman")
 
@@ -334,7 +334,7 @@ p <- data %>%
 p1 = ggMarginal(p, groupFill = T, type="boxplot")
 p1
 ```
-
+***
 ## Survival analysis
 
 ```{r KM estimator}
@@ -417,4 +417,23 @@ print(test.ph)
 ```
 ```{r cox_karno residuals}
 ggcoxzph(test.ph)
+```
+
+## Physical score analysis
+
+```{r pat.karno vs ph.karno, warning=FALSE}
+axis_limits = c(0, 100)
+
+bubble_data = original_data %>%
+  count(pat.karno, ph.karno)
+
+ggplot(bubble_data, aes(x=pat.karno, y=ph.karno, size = n)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+  geom_smooth(method="lm", se=FALSE, color="blue") +
+  labs(x="Patient Karnofsky Score", y="Physician Karnofsky Score") +
+  scale_x_continuous(limits=axis_limits) +
+  scale_y_continuous(limits=axis_limits) +
+  guides(size = "none") +
+  theme_minimal()
 ```

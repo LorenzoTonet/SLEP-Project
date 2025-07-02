@@ -29,28 +29,28 @@ The dataset we chose to analyze is the `cancer` dataset from the r package `surv
 
 The variables collected are the following:
 
-|           |                                                                                                                                                                                                    |
+|  |  |
 |:-----------------------------------|:-----------------------------------|
-| inst      | The code of the institution in which the patient was hospitalized                                                                                                                                  |
-| time      | The survival time in days                                                                                                                                                                          |
-| status    | The censoring status                                                                                                                                                                               |
-| age       | The age in years                                                                                                                                                                                   |
-| sex       | Patient sex                                                                                                                                                                                        |
-| ph.ecog   | ECOG performance score as rated by the physician. 0=asymptomatic, 1= symptomatic but completely ambulatory, 2= in bed \<50% of the day, 3= in bed \> 50% of the day but not bedbound, 4 = bedbound |
-| ph.karno  | Karnofsky performance score (bad=0-good=100) rated by physician                                                                                                                                    |
-| pat.karno | Karnofsky performance score as rated by the patient itself                                                                                                                                         |
-| meal.cal  | Calories consumed at the meal before hospitalization                                                                                                                                               |
-| wt.loss   | Weight loss in pounds in the last six months                                                                                                                                                       |
-| inst      | The code of the institution in which the patient was hospitalized                                                                                                                                  |
-| time      | The survival time in days                                                                                                                                                                          |
-| status    | The censoring status                                                                                                                                                                               |
-| age       | The age in years                                                                                                                                                                                   |
-| sex       | Patient sex                                                                                                                                                                                        |
-| ph.ecog   | ECOG performance score as rated by the physician. 0=asymptomatic, 1= symptomatic but completely ambulatory, 2= in bed \<50% of the day, 3= in bed \> 50% of the day but not bedbound, 4 = bedbound |
-| ph.karno  | Karnofsky performance score (bad=0-good=100) rated by physician                                                                                                                                    |
-| pat.karno | Karnofsky performance score as rated by the patient itself                                                                                                                                         |
-| meal.cal  | Calories consumed at the meal before hospitalization                                                                                                                                               |
-| wt.loss   | Weight loss in pounds in the last six months                                                                                                                                                       |
+| inst | The code of the institution in which the patient was hospitalized |
+| time | The survival time in days |
+| status | The censoring status |
+| age | The age in years |
+| sex | Patient sex |
+| ph.ecog | ECOG performance score as rated by the physician. 0=asymptomatic, 1= symptomatic but completely ambulatory, 2= in bed \<50% of the day, 3= in bed \> 50% of the day but not bedbound, 4 = bedbound |
+| ph.karno | Karnofsky performance score (bad=0-good=100) rated by physician |
+| pat.karno | Karnofsky performance score as rated by the patient itself |
+| meal.cal | Calories consumed at the meal before hospitalization |
+| wt.loss | Weight loss in pounds in the last six months |
+| inst | The code of the institution in which the patient was hospitalized |
+| time | The survival time in days |
+| status | The censoring status |
+| age | The age in years |
+| sex | Patient sex |
+| ph.ecog | ECOG performance score as rated by the physician. 0=asymptomatic, 1= symptomatic but completely ambulatory, 2= in bed \<50% of the day, 3= in bed \> 50% of the day but not bedbound, 4 = bedbound |
+| ph.karno | Karnofsky performance score (bad=0-good=100) rated by physician |
+| pat.karno | Karnofsky performance score as rated by the patient itself |
+| meal.cal | Calories consumed at the meal before hospitalization |
+| wt.loss | Weight loss in pounds in the last six months |
 
 Most of the present variables are categorical. We decided to add another categorical variable, cutting the age range into three age ranges: 0-50, 50-70, 70+. We also converted some of the variables into categorical factors.
 
@@ -287,9 +287,14 @@ data %>%
   mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
   ggplot() +
   geom_mosaic(aes(x = product(sex, status), fill = status)) +
-  scale_fill_manual(values = c("censored" = "#1f78b5", "dead" = "darkgray")) +
-  theme_minimal()
+  scale_fill_manual(values
 ```
+
+```{r}
+
+```
+
+`{= c("censored" = "#1f78b5", "dead" = "darkgray")) +}   theme_minimal()`
 
 ```{r evals vs status, warning=FALSE}
 p1 <- data %>%
@@ -520,8 +525,27 @@ print(test.ph)
 print(cox_karno)
 ggcoxzph(test.ph)
 ```
-```{r cox calibration}
-dd = datadist(data.cl)
-dd
+
+```{r}
+dd <-datadist(data.cl)
+end_time <- 1000
 ```
 
+```{r}
+mod.cov2 <- cph(
+    Surv(time,status) ~ pat.karno, data=data.cl,
+    x=TRUE, 
+    y=TRUE,
+    surv=TRUE,
+    time.inc=end_time
+)
+```
+
+```{r}
+calkm <- calibrate(mod.cov2, u=2000, m=40, cmethod= 'KM', B=200)
+```
+
+```{r}
+plot(calkm, cex.lab=0.7)
+```
+>>>>>>> 14b5e9d47fc86c39503e0a7e1fa0aa375b05c560

@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+
 knitr::opts_chunk$set(echo = TRUE)
 library(survival)
 library(survminer)
@@ -19,6 +20,8 @@ library(corrplot)
 library(survminer)
 library(ggmosaic)
 library(rms)
+library(timeROC)
+
 ```
 
 # NCCTG Lung Cancer Data
@@ -127,6 +130,7 @@ ggplot(nas_conditioned, aes(x=var, y=na))+
   geom_bar(stat="identity")+
   facet_wrap(~sex) +
   coord_flip()
+
 ```
 
 ```{r NAs (conditioned to status)}
@@ -557,16 +561,29 @@ par(mfrow=c(1,1))
 
 ```
 
-<<<<<<< HEAD
+
 ```{r}
-plot(calkm, cex.lab=0.7)
+plot(calkm2, cex.lab=0.7)
 ```
 
 ## ROC curve
 
-```{r roc curve, warning=FALSE}
-library(timeROC)
-ROC.thick<-timeROC(T=data.cl$time,delta=data.cl$pat.karno,marker=melanom$thick,cause=1, times=c(1800,2000,2200),iid=TRUE)
+```{r timeROC pat.karno, warning=FALSE}
+ROC.pat.karno<-timeROC(T=data.cl$time,delta=data.cl$status,marker=data.cl$pat.karno,cause=1, times=c(250,500,1000),iid=TRUE)
+ROC.pat.karno
 ```
-=======
->>>>>>> 1f3963206021c019608e9f9f6f7c939607ae3b0a
+```{r timeROC pat.karno, warning=FALSE}
+ROC.ph.karno<-timeROC(T=data.cl$time,delta=data.cl$status,marker=data.cl$ph.karno,cause=1, times=c(250,500,1000),iid=TRUE)
+ROC.ph.karno
+```
+```{r timeROC ph.ecog, warning=FALSE}
+ROC.ph.karno = timeROC(T=data.cl$time,delta=data.cl$status,marker=data.cl$ph.ecog,cause=1, times=c(250,500,1000),iid=TRUE)
+ROC.ph.karno
+```
+
+```{r timeROC cox model, warning=FALSE}
+prediction = predict(cox_karno)
+ROC.cox = timeROC(T=data.cl$time,delta=data.cl$status,marker=prediction,cause=1, times=c(250,500,1000),iid=TRUE)
+ROC.cox
+```
+

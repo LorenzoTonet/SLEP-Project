@@ -40,6 +40,18 @@ The variables collected are the following:
 | pat.karno | Karnofsky performance score as rated by the patient itself |
 | meal.cal | Calories consumed at the meal before hospitalization |
 | wt.loss | Weight loss in pounds in the last six months |
+|  |  |
+| :----------------------------------- | :----------------------------------- |
+| inst | The code of the institution in which the patient was hospitalized |
+| time | The survival time in days |
+| status | The censoring status |
+| age | The age in years |
+| sex | Patient sex |
+| ph.ecog | ECOG performance score as rated by the physician. 0=asymptomatic, 1= symptomatic but completely ambulatory, 2= in bed \<50% of the day, 3= in bed \> 50% of the day but not bedbound, 4 = bedbound |
+| ph.karno | Karnofsky performance score (bad=0-good=100) rated by physician |
+| pat.karno | Karnofsky performance score as rated by the patient itself |
+| meal.cal | Calories consumed at the meal before hospitalization |
+| wt.loss | Weight loss in pounds in the last six months |
 
 Most of the present variables are categorical. We decided to add another categorical variable, cutting the age range into three age ranges: 0-50, 50-70, 70+. We also converted some of the variables into categorical factors.
 
@@ -54,6 +66,7 @@ summary(data)
 
 ```{r factors to factors, echo = FALSE}
 data$sex <- factor(data$sex)
+levels(data$sex) = c("M", "F")
 data$status <- factor(data$status)
 data$ph.ecog <- factor(data$ph.ecog)
 data$ph.karno <- factor(data$ph.karno)
@@ -95,15 +108,15 @@ ggplot(nas, aes(x=var, y=na))+
 ```{r NAs (conditioned to sex)}
 
 dataM <-data.frame(
-  var=colnames(data[data$sex=="1",]), 
+  var=colnames(data[data$sex=="M",]), 
   sex="Male", 
-  na=colSums(is.na(data[data$sex=="1",]))
+  na=colSums(is.na(data[data$sex=="M",]))
 )
 
 dataF <- data.frame(
-  var=colnames(data[data$sex=="2",]),
+  var=colnames(data[data$sex=="F",]),
   sex="Female",
-  na=colSums(is.na(data[data$sex=="2",]))
+  na=colSums(is.na(data[data$sex=="F",]))
 )
 
 nas_conditioned <- rbind(dataM, dataF)
@@ -264,13 +277,6 @@ corrplot(corr.mat, method="color", type="full", tl.col="black", tl.srt=45,
          title="Correlation Matrix of Numerical Variables", mar=c(0,0,1,0))
 ```
 
-```{r pat vs ph karno}
-
-ggplot(data, aes(x=pat.karno, y=ph.karno)) + 
-  geom_jitter()
-
-```
-
 ### Conditioning to status
 
 ```{r sex vs status, warning=FALSE}
@@ -279,32 +285,32 @@ df_tab = as.data.frame(tab)
 colnames(df_tab) = c("status", "sex", "prop")
 
 data %>%
-  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
   ggplot() +
-  geom_mosaic(aes(x = product(sex, status_lbl), fill = status_lbl)) +
+  geom_mosaic(aes(x = product(sex, status), fill = status)) +
   scale_fill_discrete(guide = "none") +
   theme_minimal()
 ```
 
 ```{r evals vs status, warning=FALSE}
 p1 <- data %>%
-  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
   ggplot() +
-  geom_mosaic(aes(x = product(ph.ecog, status_lbl), fill = ph.ecog), na.rm = TRUE) +
+  geom_mosaic(aes(x = product(ph.ecog, status), fill = ph.ecog), na.rm = TRUE) +
   scale_fill_discrete(guide = "none") +
   theme_minimal()
 
 p2 <- data %>%
-  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
   ggplot() +
-  geom_mosaic(aes(x = product(ph.karno, status_lbl), fill = ph.karno), na.rm = TRUE) +
+  geom_mosaic(aes(x = product(ph.karno, status), fill = ph.karno), na.rm = TRUE) +
   scale_fill_discrete(guide = "none") +
   theme_minimal()
 
 p3 <- data %>%
-  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
   ggplot() +
-  geom_mosaic(aes(x = product(pat.karno, status_lbl), fill = pat.karno), na.rm = TRUE) +
+  geom_mosaic(aes(x = product(pat.karno, status), fill = pat.karno), na.rm = TRUE) +
   scale_fill_discrete(guide = "none") +
   theme_minimal()
 
@@ -313,27 +319,31 @@ p1 + p2 + p3 + plot_layout(ncol = 3)
 
 ```{r time and wt.loss vs status, warning=FALSE}
 p1 <- data %>%
-  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
-  ggplot(aes(x = status_lbl, y = time, fill = status_lbl)) +
+  mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot(aes(x = status, y = time, fill = status)) +
+  scale_fill_manual(values = c("censored" = "#1f78b5", "dead" = "darkgray")) +
   geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
   labs(x = "Status", y = "Time") +
-  theme_minimal()
+  guides(fill = "none")
 
 p2 <- data %>%
-  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
-  ggplot(aes(x = status_lbl, y = wt.loss, fill = status_lbl)) +
+  mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot(aes(x = status, y = wt.loss, fill = status)) +
   geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+  scale_fill_manual(values = c("censored" = "#1f78b4", "dead" = "darkgray")) +
   labs(x = "Status", y = "Weight Loss") +
-  theme_minimal()
+  guides(fill = "none")
 
 p1 + p2 + plot_layout(ncol = 2)
+
 ```
 
 ```{r time and wt.loss vs status2, warning=FALSE}
 p <- data %>%
-  mutate(status_lbl = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
-  ggplot(aes(x = time, y = wt.loss, color = status_lbl)) +
-  geom_point()
+  mutate(status = factor(status, levels = c(1, 2), labels = c("censored", "dead"))) %>%
+  ggplot(aes(x = time, y = wt.loss, color = status)) +
+  scale_color_manual(values = c("censored" = "#1f78b4", "dead" = "black")) +
+  geom_point() + guides(color = "none")
 
 p1 = ggMarginal(p, groupFill = T, type="boxplot")
 p1
@@ -350,7 +360,7 @@ data2 <- subset(data2, select = -meal.cal)
 data2 <- drop_na(data2)
 data2$sex <- factor(data2$sex)
 levels(data2$sex) <- c("M", "F")
-data.cl$status <- as.numeric(as.character(data.cl$status)) - 1
+data2$status <- as.numeric(as.character(data2$status)) - 1
 data2$ph.ecog <- factor(data2$ph.ecog)
 data2$ph.karno <- factor(data2$ph.karno)
 data2$pat.karno <- factor(data2$pat.karno)
@@ -362,22 +372,25 @@ rm(data2)
 ```{r KM estimator}
 survfit_sex = survfit(Surv(time, status) ~ 1, data=original_data)
 
-ggsurvplot(survfit_sex, 
-           xlab="Days", 
-           ylab="Overall survival probability",
-           risk.table=F,
-           conf.int=TRUE,
-           surv.median.line="hv", 
-           data=original_data)
+p <- ggsurvplot(survfit_sex, 
+                xlab = "Days", 
+                ylab = "Overall survival probability",
+                risk.table = FALSE,
+                conf.int = TRUE,
+                surv.median.line = "hv", 
+                data = original_data)
+
+
+p$plot <- p$plot + theme(legend.position = "none"); p
 ```
 
 ```{r KM with respect to age, warning=FALSE}
 
 original_data$age.cat <- cut(original_data$age, breaks=c(0, 50, 70, 100), labels=c("<50", "50-70", "70+"))
 
-survfit_ecog = survfit(Surv(time, event=status) ~ age.cat, data=original_data)
-summary(survfit_ecog)
-ggsurvplot(survfit_ecog, 
+survfit_age = survfit(Surv(time, event=status) ~ age.cat, data=original_data)
+
+ggsurvplot(survfit_age, 
            xlab="Days", 
            ylab="Overall survival probability",
            risk.table=FALSE,
@@ -388,7 +401,25 @@ ggsurvplot(survfit_ecog,
            break.x.by=250,  # Meno punti sull'asse x
            xlim=c(0,1000))
 
-survdiff(Surv(time, status) ~ sex, original_data)
+survdiff(Surv(time, event=status) ~ age.cat, data=original_data)
+```
+
+```{r KM sex, warning=FALSE}
+survfit_sex = survfit(Surv(time, status) ~ sex, data=data.cl)
+
+ggsurvplot(survfit_sex, 
+           xlab="Days",
+           ylab="Overall survival probability",
+           risk.table=FALSE,
+           risk.table.height=0.25,
+           conf.int=TRUE,
+           surv.median.line="hv", 
+           data=data.cl,
+           break.x.by=250,  # Meno punti sull'asse x
+           xlim=c(0,1000))
+
+survdiff(Surv(time, status) ~ sex, data = data.cl)
+
 ```
 
 ```{r KM with respect to ph.ecog, warning=FALSE}
@@ -451,37 +482,37 @@ ggplot(bubble_data, aes(x=pat.karno, y=ph.karno, size = n)) +
   theme_minimal()
 ```
 
-```{r cox_karno}
+```{r cox_pat.karno}
 cox_karno = coxph(Surv(time, status) ~ pat.karno, data=data.cl)
 summary(cox_karno)
 print(cox_karno)
 ```
 
-```{r cox_karno test}
+```{r cox_pat.karno test}
 test.ph = cox.zph(cox_karno)
 print(test.ph)
 ```
 
-```{r cox_karno residuals}
+```{r cox_pat.karno residuals}
 ggcoxzph(test.ph)
 ```
 
-```{r cox_karno}
+```{r cox_ph.karno}
 cox_ph.karno = coxph(Surv(time, status) ~ ph.karno, data=data.cl)
 summary(cox_ph.karno)
 print(cox_ph.karno)
 ```
 
-```{r cox_karno test}
+```{r cox_ph.karno test}
 test.ph = cox.zph(cox_ph.karno)
 print(test.ph)
 ```
 
-```{r cox_karno residuals}
+```{r cox_ph.karno residuals}
 ggcoxzph(test.ph)
 ```
 
-```{r whole cox model?}
+```{r whole cox model}
 cox_karno = coxph(
   Surv(time, status) ~ age + sex + ph.ecog + ph.karno + pat.karno + wt.loss , data=data.cl)
 summary(cox_karno)

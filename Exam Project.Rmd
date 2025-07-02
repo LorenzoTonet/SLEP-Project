@@ -569,21 +569,42 @@ plot(calkm2, cex.lab=0.7)
 ## ROC curve
 
 ```{r timeROC pat.karno, warning=FALSE}
-ROC.pat.karno<-timeROC(T=data.cl$time,delta=data.cl$status,marker=data.cl$pat.karno,cause=1, times=c(250,500,1000),iid=TRUE)
+ROC.pat.karno=timeROC(T=data.cl$time,delta=data.cl$status,marker=data.cl$pat.karno,cause=1, times=c(250,365,500,1000),iid=TRUE)
 ROC.pat.karno
 ```
 ```{r timeROC pat.karno, warning=FALSE}
-ROC.ph.karno<-timeROC(T=data.cl$time,delta=data.cl$status,marker=data.cl$ph.karno,cause=1, times=c(250,500,1000),iid=TRUE)
+ROC.ph.karno=timeROC(T=data.cl$time,delta=data.cl$status,marker=data.cl$ph.karno,cause=1, times=c(250,365,500,1000),iid=TRUE)
 ROC.ph.karno
 ```
 ```{r timeROC ph.ecog, warning=FALSE}
-ROC.ph.karno = timeROC(T=data.cl$time,delta=data.cl$status,marker=data.cl$ph.ecog,cause=1, times=c(250,500,1000),iid=TRUE)
+ROC.ph.karno = timeROC(T=data.cl$time,delta=data.cl$status,marker=data.cl$ph.ecog,cause=1, times=c(250,365,500,1000),iid=TRUE)
 ROC.ph.karno
 ```
 
 ```{r timeROC cox model, warning=FALSE}
 prediction = predict(cox_karno)
-ROC.cox = timeROC(T=data.cl$time,delta=data.cl$status,marker=prediction,cause=1, times=c(250,500,1000),iid=TRUE)
+ROC.cox = timeROC(T=data.cl$time,delta=data.cl$status,marker=prediction,cause=1, times=c(250,365,500,1000),iid=TRUE)
 ROC.cox
+```
+```{r plotAUCs, warning=FALSE}
+plotAUCcurve(ROC.ph.karno, FP = 2, add = FALSE,conf.int = FALSE,conf.band = FALSE, col = "black")
+plotAUCcurve(ROC.pat.karno, FP = 2, add =TRUE, conf.int = FALSE,conf.band = FALSE, col = "blue")
+plotAUCcurve(ROC.cox, FP = 2, add =TRUE, conf.int = FALSE,conf.band = FALSE, col = "red")
+title(main="Time-dependent AUCs")
+legend("topleft", legend=c("ph.karno","pat.carno", "whole model"), lty=c(1,1,1),lwd=c(2,2,2), 
+       col=c("black","blue", "red"), bty="n")
+```
+```{r oneyear ROC, warning=FALSE}
+plot(ROC.ph.karno,time=365,add = FALSE, col = "black",title=FALSE, lwd=2)
+plot(ROC.pat.karno,time=365,add = TRUE, col = "blue",title=FALSE, lwd=2)
+plot(ROC.cox,time=365,add = TRUE, col = "red",title=FALSE, lwd=2)
+legend("bottomright", legend=c("ph.karno","pat.karno", "whole"), lty=c(1,1,1),lwd=c(2,2,2), 
+       col=c("black","blue", "red"), bty="n")
+title(main="Time-dependent ROC curves at 1 year")
+```
+```{r oneyear AUCs confidence intervals, warning=FALSE}
+confint(ROC.ph.karno, time=365)
+confint(ROC.pat.karno, time=365)
+confint(ROC.cox, time=365)
 ```
 

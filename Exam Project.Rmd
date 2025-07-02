@@ -28,18 +28,18 @@ The dataset we chose to analyze is the `cancer` dataset from the r package `surv
 
 The variables collected are the following:
 
-|           |                                                                                                                                                                                                    |
+|  |  |
 |:-----------------------------------|:-----------------------------------|
-| inst      | The code of the institution in which the patient was hospitalized                                                                                                                                  |
-| time      | The survival time in days                                                                                                                                                                          |
-| status    | The censoring status                                                                                                                                                                               |
-| age       | The age in years                                                                                                                                                                                   |
-| sex       | Patient sex                                                                                                                                                                                        |
-| ph.ecog   | ECOG performance score as rated by the physician. 0=asymptomatic, 1= symptomatic but completely ambulatory, 2= in bed \<50% of the day, 3= in bed \> 50% of the day but not bedbound, 4 = bedbound |
-| ph.karno  | Karnofsky performance score (bad=0-good=100) rated by physician                                                                                                                                    |
-| pat.karno | Karnofsky performance score as rated by the patient itself                                                                                                                                         |
-| meal.cal  | Calories consumed at the meal before hospitalization                                                                                                                                               |
-| wt.loss   | Weight loss in pounds in the last six months                                                                                                                                                       |
+| inst | The code of the institution in which the patient was hospitalized |
+| time | The survival time in days |
+| status | The censoring status |
+| age | The age in years |
+| sex | Patient sex |
+| ph.ecog | ECOG performance score as rated by the physician. 0=asymptomatic, 1= symptomatic but completely ambulatory, 2= in bed \<50% of the day, 3= in bed \> 50% of the day but not bedbound, 4 = bedbound |
+| ph.karno | Karnofsky performance score (bad=0-good=100) rated by physician |
+| pat.karno | Karnofsky performance score as rated by the patient itself |
+| meal.cal | Calories consumed at the meal before hospitalization |
+| wt.loss | Weight loss in pounds in the last six months |
 
 Most of the present variables are categorical. We decided to add another categorical variable, cutting the age range into three age ranges: 0-50, 50-70, 70+. We also converted some of the variables into categorical factors.
 
@@ -337,13 +337,29 @@ p1
 
 ## Survival analysis
 
+```{r Removing NAs}
+
+data2 <- survival::cancer
+data2 <- subset(data2, select = -meal.cal)
+data2 <- drop_na(data2)
+data2$sex <- factor(data2$sex)
+levels(data2$sex) <- c("M", "F")
+data.cl$status <- as.numeric(as.character(data.cl$status)) - 1
+data2$ph.ecog <- factor(data2$ph.ecog)
+data2$ph.karno <- factor(data2$ph.karno)
+data2$pat.karno <- factor(data2$pat.karno)
+data.cl <- data2
+
+rm(data2)
+```
+
 ```{r KM estimator}
 survfit_sex = survfit(Surv(time, status) ~ 1, data=original_data)
 
 ggsurvplot(survfit_sex, 
            xlab="Days", 
            ylab="Overall survival probability",
-           risk.table=TRUE,
+           risk.table=F,
            conf.int=TRUE,
            surv.median.line="hv", 
            data=original_data)
@@ -358,7 +374,7 @@ summary(survfit_ecog)
 ggsurvplot(survfit_ecog, 
            xlab="Days", 
            ylab="Overall survival probability",
-           risk.table=TRUE,
+           risk.table=FALSE,
            risk.table.height=0.25,
            conf.int=TRUE,
            surv.median.line="hv", 
@@ -374,7 +390,7 @@ survfit_ecog = survfit(Surv(time, event=status) ~ ph.ecog, data=original_data)
 ggsurvplot(survfit_ecog, 
            xlab="Days", 
            ylab="Overall survival probability",
-           risk.table=TRUE,
+           risk.table=FALSE,
            conf.int=FALSE,
            surv.median.line="hv",
            data=original_data)
@@ -382,9 +398,8 @@ ggsurvplot(survfit_ecog,
 survdiff(Surv(time, status) ~ ph.ecog, original_data)
 ```
 
-
 ```{r cox model}
-cox_sex = coxph(Surv(time, status) ~ sex, data=original_data)
+cox_sex = coxph(Surv(time, status) ~ sex, data=data.cl)
 print(cox_sex)
 ```
 
@@ -398,7 +413,7 @@ ggcoxzph(test.ph)
 ```
 
 ```{r cox_age_sex model}
-cox_age_sex = coxph(Surv(time, status) ~ age+sex, data=original_data)
+cox_age_sex = coxph(Surv(time, status) ~ age+sex, data=data.cl)
 print(cox_age_sex)
 ```
 
@@ -414,7 +429,7 @@ ggcoxzph(test.ph)
 ### Karno "models"
 
 ```{r cox_karno}
-cox_karno = coxph(Surv(time, status) ~ pat.karno, data=original_data)
+cox_karno = coxph(Surv(time, status) ~ pat.karno, data=data.cl)
 print(cox_karno)
 ```
 
@@ -428,7 +443,7 @@ ggcoxzph(test.ph)
 ```
 
 ```{r cox_karno}
-cox_ph.karno = coxph(Surv(time, status) ~ ph.karno, data=original_data)
+cox_ph.karno = coxph(Surv(time, status) ~ ph.karno, data=data.cl)
 print(cox_ph.karno)
 ```
 
@@ -443,11 +458,10 @@ ggcoxzph(test.ph)
 
 ```{r whole cox model?}
 cox_karno = coxph(
-  Surv(time, status) ~ age + sex + ph.ecog + ph.karno + wt.loss + age.cat , data=original_data)
+  Surv(time, status) ~ age + sex + ph.ecog + ph.karno + wt.loss , data=data.cl)
 summary(cox_karno)
 test.ph = cox.zph(cox_karno)
 print(test.ph)
 print(cox_karno)
 ggcoxzph(test.ph)
 ```
-

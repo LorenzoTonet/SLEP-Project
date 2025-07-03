@@ -546,14 +546,24 @@ mod.cov3 <- cph(
 ```
 
 ```{r}
-calkm2 <- calibrate(mod.cov2, u=400, m=20, B=25, cmethod= 'KM')
-calkm3 <- calibrate(mod.cov3, u=400, m=20, B=25, cmethod= 'KM')
+ Calibrazione per mod.cov2
+calkm2_250 <- calibrate(mod.cov2, u=250, m=40, B=30, cmethod= 'KM')
+calkm2_500 <- calibrate(mod.cov2, u=500, m=40, B=30, cmethod= 'KM')
+calkm2_700 <- calibrate(mod.cov2, u=700, m=40, B=30, cmethod= 'KM')
 
+# Calibrazione per mod.cov3
+calkm3_250 <- calibrate(mod.cov3, u=250, m=40, B=30, cmethod= 'KM')
+calkm3_500 <- calibrate(mod.cov3, u=500, m=40, B=30, cmethod= 'KM')
+calkm3_700 <- calibrate(mod.cov3, u=700, m=40, B=30, cmethod= 'KM')
 
-par(mfrow=c(1,2))
-plot(calkm2, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9))
-plot(calkm3, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9))
+# Plot
+par(mfrow=c(2,3))
+plot(calkm2_250, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9), main="mod.cov2, u=250")
+plot(calkm2_500, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9), main="mod.cov2, u=500")
+plot(calkm2_700, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9), main="mod.cov2, u=700")
+plot(calkm3_250, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9), main="mod.cov3, u=250")
+plot(calkm3_500, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9), main="mod.cov3, u=500")
+plot(calkm3_700, cex.lab=0.7, xlim=c(0,.9), ylim=c(0,.9), main="mod.cov3, u=700")
 par(mfrow=c(1,1))
-
 ```
 
